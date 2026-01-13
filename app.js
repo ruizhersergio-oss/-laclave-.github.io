@@ -635,11 +635,30 @@ function guardarReservaManual(event) {
 // GESTIÓN DE MENÚ DEL DÍA
 // ============================================
 
-function cargarMenuDelDia() {
+async function cargarMenuDelDia() {
     try {
-        const menusActivos = JSON.parse(localStorage.getItem('menus_activos') || '[]');
+        let menusActivos = [];
+
+        // Intentar cargar desde Firebase primero
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            const db = firebase.database();
+            const snapshot = await db.ref('menus_activos').once('value');
+            
+            if (snapshot.exists()) {
+                menusActivos = snapshot.val() || [];
+                console.log('✅ Menús activos desde Firebase:', menusActivos.length);
+            }
+        }
+
+        // Fallback a localStorage
+        if (menusActivos.length === 0) {
+            menusActivos = JSON.parse(localStorage.getItem('menus_activos') || '[]');
+        }
+
         const container = document.querySelector('.menu-preview-container');
         const noMenuMsg = document.getElementById('noMenuMsg');
+
+        if (!container) return;
 
         const existingContainer = container.querySelector('.menu-images-container');
         if (existingContainer) {
@@ -672,6 +691,7 @@ function cargarMenuDelDia() {
     }
 }
 
+
 function subirFotoMenu(input) {
     const file = input.files[0];
     if (!file) return;
@@ -693,11 +713,10 @@ function subirFotoMenu(input) {
     uploadLabel.classList.add('uploading');
     uploadLabel.textContent = '⏳ Subiendo...';
 
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         const imgData = e.target.result;
 
         try {
-            const menus = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
             const nuevoMenu = {
                 id: Date.now().toString(),
                 url: imgData,
@@ -705,13 +724,20 @@ function subirFotoMenu(input) {
                 activo: false
             };
 
-            menus.push(nuevoMenu);
-
-            if (menus.length > 10) {
-                menus.shift();
+            // Guardar en localStorage (backup local)
+            const menusLocal = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
+            menusLocal.push(nuevoMenu);
+            if (menusLocal.length > 10) {
+                menusLocal.shift();
             }
+            localStorage.setItem('menus_subidos', JSON.stringify(menusLocal));
 
-            localStorage.setItem('menus_subidos', JSON.stringify(menus));
+            // ✅ NUEVO: Guardar en Firebase
+            if (typeof firebase !== 'undefined' && firebase.database) {
+                const db = firebase.database();
+                await db.ref('menus_subidos/' + nuevoMenu.id).set(nuevoMenu);
+                console.log('✅ Menú guardado en Firebase');
+            }
 
             uploadLabel.classList.remove('uploading');
             uploadLabel.textContent = '📤 Subir nueva foto del menú';
@@ -731,12 +757,31 @@ function subirFotoMenu(input) {
     reader.readAsDataURL(file);
 }
 
-function cargarGaleriaMenus() {
+
+async function cargarGaleriaMenus() {
     const gallery = document.getElementById('menuGallery');
     if (!gallery) return;
 
     try {
-        const menus = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
+        let menus = [];
+
+        // Intentar cargar desde Firebase primero
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            const db = firebase.database();
+            const snapshot = await db.ref('menus_subidos').once('value');
+            
+            if (snapshot.exists()) {
+                const menusFirebase = snapshot.val();
+                menus = Object.values(menusFirebase);
+                console.log('✅ Menús cargados desde Firebase:', menus.length);
+            }
+        }
+
+        // Si no hay en Firebase, usar localStorage como fallback
+        if (menus.length === 0) {
+            menus = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
+            console.log('📦 Menús cargados desde localStorage:', menus.length);
+        }
 
         if (menus.length === 0) {
             gallery.innerHTML = '<p class="no-menus-msg">No hay fotos subidas aún</p>';
@@ -750,6 +795,7 @@ function cargarGaleriaMenus() {
         gallery.innerHTML = '<p class="no-menus-msg">Error al cargar menús</p>';
     }
 }
+
 
 function renderizarGaleriaMenus(menus, gallery) {
     const menusActivos = JSON.parse(localStorage.getItem('menus_activos') || '[]');
@@ -777,7 +823,7 @@ function renderizarGaleriaMenus(menus, gallery) {
     gallery.innerHTML = html;
 }
 
-function activarMenuEnHome(menuId, imgUrl) {
+async function activarMenuEnHome(menuId, imgUrl) {
     try {
         let menusActivos = JSON.parse(localStorage.getItem('menus_activos') || '[]');
 
@@ -788,7 +834,17 @@ function activarMenuEnHome(menuId, imgUrl) {
 
         if (!menusActivos.includes(imgUrl)) {
             menusActivos.push(imgUrl);
+            
+            // Guardar en localStorage
             localStorage.setItem('menus_activos', JSON.stringify(menusActivos));
+            
+            // ✅ NUEVO: Guardar en Firebase
+            if (typeof firebase !== 'undefined' && firebase.database) {
+                const db = firebase.database();
+                await db.ref('menus_activos').set(menusActivos);
+                console.log('✅ Menús activos sincronizados con Firebase');
+            }
+            
             cargarMenuDelDia();
             cargarGaleriaMenus();
             alert('✅ Menú activado en la página principal');
@@ -799,6 +855,7 @@ function activarMenuEnHome(menuId, imgUrl) {
         alert('❌ Error al activar el menú');
     }
 }
+
 
 function desactivarMenuEnHome(imgUrl) {
     try {
