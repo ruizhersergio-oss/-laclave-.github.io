@@ -492,9 +492,19 @@
             <button class="close-legal-btn" onclick="cerrarModalLegal()">Cerrar</button>
         </div>
     </div>
+    <!-- Scripts de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <!-- Scripts -->
+    <!-- Tus scripts actuales -->
     <script src="config.js"></script>
+    <!-- Asegúrate de inicializar Firebase aquí -->
+    <script>
+        firebase.initializeApp({
+            databaseURL: "https://la-clave-5f529-default-rtdb.firebaseio.com/"
+        });
+    </script>
     <script src="app.js"></script>
+
 </body>
 </html>

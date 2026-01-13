@@ -80,25 +80,42 @@ function esDiaBloqueado(fecha) {
 // GESTIÓN DE RESERVAS
 // ============================================
 
-function cargarReservas() {
+async function cargarReservas() {
     try {
-        const data = localStorage.getItem('reservas_laclave');
-        reservas = data ? JSON.parse(data) : [];
+        // Cargar desde Firebase
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            const snapshot = await firebase.database().ref('reservas').once('value');
+            if (snapshot.exists()) {
+                reservas = snapshot.val();
+                localStorage.setItem('reservas_laclave', JSON.stringify(reservas));
+            }
+        } else {
+            // Si no hay nube, usar local
+            const data = localStorage.getItem('reservas_laclave');
+            reservas = data ? JSON.parse(data) : [];
+        }
         limpiarReservasAntiguas();
     } catch (error) {
         console.error('Error cargando reservas:', error);
-        reservas = [];
     }
 }
 
-function guardarReservas() {
+
+async function guardarReservas() {
     try {
+        // Guardar en local
         localStorage.setItem('reservas_laclave', JSON.stringify(reservas));
+        
+        // ✅ Sincronizar con Firebase
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            await firebase.database().ref('reservas').set(reservas);
+            console.log("Reservas sincronizadas en la nube");
+        }
     } catch (error) {
         console.error('Error guardando reservas:', error);
-        alert('Error al guardar. Verifica el almacenamiento del navegador.');
     }
 }
+
 
 function limpiarReservasAntiguas() {
     const hoy = new Date().setHours(0, 0, 0, 0);
@@ -691,8 +708,7 @@ async function cargarMenuDelDia() {
     }
 }
 
-
-function subirFotoMenu(input) {
+async function subirFotoMenu(input) {
     const file = input.files[0];
     if (!file) return;
 
@@ -707,6 +723,68 @@ function subirFotoMenu(input) {
         input.value = '';
         return;
     }
+
+    const uploadLabel = document.querySelector('.upload-label');
+    uploadLabel.classList.add('uploading');
+    uploadLabel.textContent = '⏳ Subiendo a la nube...';
+
+    try {
+        // ✅ Subir a ImgBB
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${CONFIG.imgbb.apiKey}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const nuevoMenu = {
+                id: Date.now().toString(),
+                url: data.data.url,           // URL de ImgBB
+                display_url: data.data.display_url,
+                thumb_url: data.data.thumb.url,
+                fecha: new Date().toISOString(),
+                activo: false
+            };
+
+            // Guardar en Firebase
+            if (typeof firebase !== 'undefined' && firebase.database) {
+                await firebase.database().ref('menus_subidos/' + nuevoMenu.id).set(nuevoMenu);
+                console.log('✅ Menú guardado en Firebase con URL de ImgBB');
+            }
+
+            // Backup local
+            const menusLocal = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
+            menusLocal.push(nuevoMenu);
+            if (menusLocal.length > 10) {
+                menusLocal.shift();
+            }
+            localStorage.setItem('menus_subidos', JSON.stringify(menusLocal));
+
+            uploadLabel.classList.remove('uploading');
+            uploadLabel.textContent = '📤 Subir nueva foto del menú';
+            input.value = '';
+
+            cargarGaleriaMenus();
+            alert('✅ Foto subida correctamente a la nube');
+
+        } else {
+            throw new Error('Error al subir imagen a ImgBB');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        uploadLabel.classList.remove('uploading');
+        uploadLabel.textContent = '📤 Subir nueva foto del menú';
+        alert('❌ Error al subir la imagen. Verifica tu conexión.');
+        input.value = '';
+    }
+}
+
+
 
     const reader = new FileReader();
     const uploadLabel = document.querySelector('.upload-label');
@@ -755,7 +833,7 @@ function subirFotoMenu(input) {
     };
 
     reader.readAsDataURL(file);
-}
+
 
 
 async function cargarGaleriaMenus() {
