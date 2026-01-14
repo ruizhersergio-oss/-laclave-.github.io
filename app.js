@@ -202,22 +202,47 @@ function actualizarHorasDisponibles() {
         return;
     }
 
+    // Calcular personas por horario
+    const reservasDelDia = reservas.filter(r => r.fecha === fechaInput.value && r.estado !== 'cancelada');
+    
+    const personasComida = reservasDelDia
+        .filter(r => parseInt(r.hora.split(':')[0]) < 17)
+        .reduce((sum, r) => sum + (r.personas === 'mas8' ? 10 : parseInt(r.personas)), 0);
+
+    const personasCena = reservasDelDia
+        .filter(r => parseInt(r.hora.split(':')[0]) >= 17)
+        .reduce((sum, r) => sum + (r.personas === 'mas8' ? 10 : parseInt(r.personas)), 0);
+
     const horasComida = ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
     const horasCena = ['20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
 
     let html = '<option value="">Selecciona hora</option>';
-    html += '<optgroup label="🍽️ Mediodía">';
-    horasComida.forEach(hora => {
-        html += `<option value="${hora}">${hora}</option>`;
-    });
-    html += '</optgroup><optgroup label="🌙 Cena">';
-    horasCena.forEach(hora => {
-        html += `<option value="${hora}">${hora}</option>`;
-    });
-    html += '</optgroup>';
+
+    // Comidas (solo si no está lleno)
+    if (personasComida < 15) {
+        html += '<optgroup label="🍽️ Mediodía">';
+        horasComida.forEach(hora => {
+            html += `<option value="${hora}">${hora}</option>`;
+        });
+        html += '</optgroup>';
+    } else {
+        html += '<optgroup label="🍽️ Mediodía - COMPLETO"></optgroup>';
+    }
+
+    // Cenas (solo si no está lleno)
+    if (personasCena < 15) {
+        html += '<optgroup label="🌙 Cena">';
+        horasCena.forEach(hora => {
+            html += `<option value="${hora}">${hora}</option>`;
+        });
+        html += '</optgroup>';
+    } else {
+        html += '<optgroup label="🌙 Cena - COMPLETO"></optgroup>';
+    }
 
     horaSelect.innerHTML = html;
 }
+
 
 function mostrarDisponibilidad() {
     const fecha = document.getElementById('fecha')?.value;
@@ -464,16 +489,28 @@ let html = `
             const diaSemana = fecha.getDay();
 
             const esDelMes = fecha.getMonth() === month;
-            const reservasDelDia = reservas.filter(r => r.fecha === fechaStr && r.estado !== 'cancelada');
-            const comida = reservasDelDia.filter(r => parseInt(r.hora.split(':')[0]) < 17).length;
-            const cena = reservasDelDia.filter(r => parseInt(r.hora.split(':')[0]) >= 17).length;
-
             const esHoy = fecha.toDateString() === hoy.toDateString();
             const esPasado = fecha < hoy;
             const esCerrado = diaSemana === 1;
             const estaBloqueado = esDiaBloqueado(fechaStr);
 
             const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const reservasDelDia = reservas.filter(r => r.fecha === fechaStr && r.estado !== 'cancelada');
+            const comida = reservasDelDia.filter(r => parseInt(r.hora.split(':')[0]) < 17).length;
+            const cena = reservasDelDia.filter(r => parseInt(r.hora.split(':')[0]) >= 17).length;
+
+            // Calcular personas totales para comida y cena
+            const personasComida = reservasDelDia
+                .filter(r => parseInt(r.hora.split(':')[0]) < 17)
+                .reduce((sum, r) => sum + (r.personas === 'mas8' ? 10 : parseInt(r.personas)), 0);
+
+            const personasCena = reservasDelDia
+                .filter(r => parseInt(r.hora.split(':')[0]) >= 17)
+                .reduce((sum, r) => sum + (r.personas === 'mas8' ? 10 : parseInt(r.personas)), 0);
+
+            // Determinar clases de color según disponibilidad
+            const claseComida = personasComida >= 15 ? 'lleno' : personasComida >= 8 ? 'medio-lleno' : 'disponible';
+            const claseCena = personasCena >= 15 ? 'lleno' : personasCena >= 8 ? 'medio-lleno' : 'disponible';
 
             html += `
             <div class="calendar-day-box ${!esDelMes ? 'otro-mes' : ''} ${esHoy ? 'today' : ''} ${esPasado ? 'past' : ''} ${esCerrado ? 'closed' : ''} ${estaBloqueado ? 'blocked' : ''}" 
@@ -486,8 +523,14 @@ let html = `
                 <div class="day-stats">
                     ${estaBloqueado ? '<div class="blocked-label">✗ BLOQUEADO</div>' : 
                       esCerrado ? '<span class="closed-label">CERRADO</span>' : `
-                        <div class="stat-row"><span class="icon">🍽️</span><span class="count">${comida}</span></div>
-                        <div class="stat-row"><span class="icon">🌙</span><span class="count">${cena}</span></div>
+                        <div class="stat-row ${claseComida}">
+                            <span class="icon">🍽️</span>
+                            <span class="count">${personasComida}</span>
+                        </div>
+                        <div class="stat-row ${claseCena}">
+                            <span class="icon">🌙</span>
+                            <span class="count">${personasCena}</span>
+                        </div>
                     `}
                 </div>
                 ${adminLogueado && !esPasado && !esCerrado && esDelMes ? `
@@ -851,23 +894,37 @@ async function cargarGaleriaMenus() {
 
     try {
         let menus = [];
+        let menusActivos = [];
 
-        // Intentar cargar desde Firebase primero
+        // ✅ SIEMPRE intentar cargar desde Firebase primero
         if (typeof firebase !== 'undefined' && firebase.database) {
             const db = firebase.database();
-            const snapshot = await db.ref('menus_subidos').once('value');
             
-            if (snapshot.exists()) {
-                const menusFirebase = snapshot.val();
+            // Cargar menús
+            const snapshotMenus = await db.ref('menus_subidos').once('value');
+            if (snapshotMenus.exists()) {
+                const menusFirebase = snapshotMenus.val();
                 menus = Object.values(menusFirebase);
                 console.log('✅ Menús cargados desde Firebase:', menus.length);
             }
+
+            // Cargar menús activos
+            const snapshotActivos = await db.ref('menus_activos').once('value');
+            if (snapshotActivos.exists()) {
+                menusActivos = snapshotActivos.val() || [];
+                console.log('✅ Menús activos desde Firebase:', menusActivos.length);
+            }
+
+            // Sincronizar con localStorage
+            localStorage.setItem('menus_subidos', JSON.stringify(menus));
+            localStorage.setItem('menus_activos', JSON.stringify(menusActivos));
         }
 
         // Si no hay en Firebase, usar localStorage como fallback
         if (menus.length === 0) {
             menus = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
-            console.log('📦 Menús cargados desde localStorage:', menus.length);
+            menusActivos = JSON.parse(localStorage.getItem('menus_activos') || '[]');
+            console.log('📦 Menús desde localStorage:', menus.length);
         }
 
         if (menus.length === 0) {
@@ -882,6 +939,7 @@ async function cargarGaleriaMenus() {
         gallery.innerHTML = '<p class="no-menus-msg">Error al cargar menús</p>';
     }
 }
+
 
 
 function renderizarGaleriaMenus(menus, gallery) {
