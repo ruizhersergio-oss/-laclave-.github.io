@@ -384,6 +384,7 @@ function cargarPanelAdmin() {
     cargarGaleriaMenus();
 }
 
+
 function actualizarEstadisticas() {
     const hoy = new Date();
     const hoyStr = formatearFechaInput(hoy);
@@ -893,17 +894,23 @@ function renderizarGaleriaMenus(menus, gallery) {
         const esActivo = menusActivos.includes(menu.url);
 
         html += `
-        <div class="menu-gallery-item">
-            ${esActivo ? '<span class="active-badge">✓ ACTIVO</span>' : ''}
-            <img src="${menu.url}" alt="Menú ${fechaStr}" onclick="verImagenCompleta('${menu.url}')">
-            <div class="menu-gallery-meta">
-                <small>${fechaStr}</small>
-                <div style="display:flex; gap:0.3rem;">
-                    ${!esActivo ? `<button class="activate-menu-btn" onclick="activarMenuEnHome('${menu.id}', '${menu.url}')" title="Activar en página principal">✓ Activar</button>` : `<button class="deactivate-menu-btn" onclick="desactivarMenuEnHome('${menu.url}')" title="Desactivar">✗</button>`}
-                    <button class="delete-img-btn" onclick="eliminarFotoMenu('${menu.id}')" title="Eliminar foto">🗑️</button>
-                </div>
-            </div>
-        </div>`;
+    <div class="menu-gallery-item">
+        ${esActivo ? '<span class="active-badge">✓ ACTIVO</span>' : ''}
+        <img src="${menu.url}" alt="Menú ${fechaStr}" onclick="verImagenCompleta('${menu.url}')">
+        <div class="menu-gallery-meta">
+            <small>${fechaStr}</small>
+        </div>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+            ${!esActivo ? 
+                `<button class="activate-menu-btn" onclick="activarMenuEnHome('${menu.id}', '${menu.url}')" title="Activar">Activar</button>` 
+                : 
+                `<button class="deactivate-menu-btn" onclick="desactivarMenuEnHome('${menu.id}', '${menu.url}')" title="Desactivar">Desactivar</button>`
+            }
+            <button class="delete-img-btn" onclick="eliminarFotoMenu('${menu.id}')" title="Eliminar foto">❌</button>
+        </div>
+    </div>
+`;
+
     });
 
     gallery.innerHTML = html;
@@ -951,8 +958,10 @@ async function desactivarMenuEnHome(menuId, imgUrl) {
         if (typeof firebase !== 'undefined' && firebase.database) {
             await firebase.database().ref('menus_activos').set(menusActivos);
             
-            // ✅ NUEVO: Actualizar estado en menus_subidos
-            await firebase.database().ref(`menus_subidos/${menuId}/activo`).set(false);
+            // ✅ Actualizar estado en menus_subidos
+            if (menuId) {
+                await firebase.database().ref(`menus_subidos/${menuId}/activo`).set(false);
+            }
         }
         
         cargarMenuDelDia();
@@ -965,28 +974,39 @@ async function desactivarMenuEnHome(menuId, imgUrl) {
 
 
 
-function eliminarFotoMenu(menuId) {
+async function eliminarFotoMenu(menuId) {
     if (!confirm('¿Eliminar esta foto del menú?')) return;
 
     try {
+        // Obtener menú local
         let menus = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
         const menuAEliminar = menus.find(m => m.id === menuId);
 
         if (menuAEliminar) {
-            desactivarMenuEnHome(menuAEliminar.url);
+            await desactivarMenuEnHome(menuId, menuAEliminar.url);
         }
 
+        // Eliminar de local
         menus = menus.filter(m => m.id !== menuId);
         localStorage.setItem('menus_subidos', JSON.stringify(menus));
 
+        // ✅ Eliminar de Firebase
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            await firebase.database().ref('menus_subidos/' + menuId).remove();
+            console.log('✅ Menú eliminado de Firebase');
+        }
+
         cargarGaleriaMenus();
         cargarMenuDelDia();
+        alert('✅ Menú eliminado correctamente');
 
     } catch (error) {
         console.error('Error eliminando menú:', error);
         alert('❌ Error al eliminar');
     }
 }
+
+
 
 function verImagenCompleta(url) {
     window.open(url, '_blank');
@@ -1004,6 +1024,39 @@ function abrirModalLegal() {
 function cerrarModalLegal() {
     document.getElementById('legalModal').classList.remove('show');
     document.body.style.overflow = '';
+}
+// Migrar menús antiguos a Firebase (ejecutar una sola vez)
+async function migrarMenusAFirebase() {
+    try {
+        // Obtener menús del localStorage
+        const menusLocal = JSON.parse(localStorage.getItem('menus_subidos') || '[]');
+        const menusActivosLocal = JSON.parse(localStorage.getItem('menus_activos') || '[]');
+
+        if (menusLocal.length === 0) {
+            console.log('No hay menús para migrar');
+            return;
+        }
+
+        console.log('Migrando', menusLocal.length, 'menús a Firebase...');
+
+        // Subir cada menú a Firebase
+        for (const menu of menusLocal) {
+            // Marcar si está activo
+            menu.activo = menusActivosLocal.includes(menu.url);
+            
+            await firebase.database().ref('menus_subidos/' + menu.id).set(menu);
+        }
+
+        // Subir menús activos
+        await firebase.database().ref('menus_activos').set(menusActivosLocal);
+
+        console.log('✅ Migración completada');
+        alert('✅ Migración completada. Recarga la página.');
+        
+    } catch (error) {
+        console.error('Error en migración:', error);
+        alert('❌ Error en la migración');
+    }
 }
 
 // ============================================
