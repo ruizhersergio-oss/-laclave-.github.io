@@ -1,0 +1,49 @@
+/* ============================================
+   CORRECCIONES FORMULARIO MÓVIL
+   ============================================ */
+
+/* Arreglo del selector de teléfono */
+@media (max-width: 768px) {
+    .phone-input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        width: 100%;
+    }
+
+    .country-select {
+        width: 100% !important;
+        min-width: 100% !important;
+        margin-right: 0 !important;
+    }
+
+    .phone-number-input {
+        width: 100% !important;
+        flex: 1 !important;
+    }
+
+    /* Arreglo del input de fecha */
+    input[type="date"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        padding: 0.8rem;
+        font-size: 1rem;
+        border: 2px solid #8B4513;
+        border-radius: 8px;
+        background: white;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        background: transparent;
+        bottom: 0;
+        color: transparent;
+        cursor: pointer;
+        height: auto;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: auto;
+    }
+}

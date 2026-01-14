@@ -103,28 +103,66 @@
 }
 
 /* Responsive del header */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .calendar-month-header {
-        gap: 0.6rem;
         padding: 0.8rem;
+        gap: 0.8rem;
     }
 
     .calendar-month-title {
-        font-size: 1.2rem;
-        min-width: 150px;
+        font-size: 1.3rem;
+        order: 2;
     }
 
-    .nav-month-btn {
-        width: 38px;
-        height: 38px;
-        font-size: 1rem;
+    .nav-month-btn:first-of-type {
+        order: 1;
+    }
+
+    .nav-month-btn:last-of-type {
+        order: 3;
     }
 
     .today-btn {
-        padding: 0.5rem 0.9rem;
-        font-size: 0.8rem;
+        order: 4;
     }
 }
+
+@media (max-width: 600px) {
+    .calendar-month-header {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .calendar-month-title {
+        width: 100%;
+        text-align: center;
+        order: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-month-btn:first-of-type {
+        order: 2;
+    }
+
+    .nav-month-btn:last-of-type {
+        order: 3;
+    }
+
+    .nav-month-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .today-btn {
+        order: 4;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
 
 @media (max-width: 480px) {
     .calendar-month-header {
@@ -198,7 +236,37 @@
     gap: 0.6rem;
     flex-shrink: 0;
     margin-left: 1rem;
+    flex-wrap: wrap;  /* ← AÑADIR ESTA LÍNEA */
 }
+
+/* Responsive: mejor alineación en móvil */
+@media (max-width: 768px) {
+    .reservation-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+
+    .reservation-actions {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+        gap: 0.5rem;
+        flex-direction: row;  /* ← FORZAR FILA HORIZONTAL */
+        flex-wrap: nowrap;     /* ← NO PERMITIR SALTOS */
+    }
+
+    .estado-badge,
+    .confirm-btn,
+    .delete-btn {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+        flex: 0 1 auto;        /* ← NO CRECER */
+        white-space: nowrap;   /* ← NO ROMPER TEXTO */
+    }
+}
+
 
 .estado-badge {
     padding: 0.4rem 0.8rem;

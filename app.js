@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 30000);
 });
+// Resetear botón de subida al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadLabel = document.querySelector('.upload-label');
+    if (uploadLabel && uploadLabel.classList.contains('uploading')) {
+        uploadLabel.classList.remove('uploading');
+        uploadLabel.textContent = '📤 Subir nueva foto del menú';
+    }
+});
 
 // ============================================
 // GESTIÓN DE DÍAS BLOQUEADOS
@@ -906,50 +914,56 @@ async function activarMenuEnHome(menuId, imgUrl) {
         let menusActivos = JSON.parse(localStorage.getItem('menus_activos') || '[]');
 
         if (menusActivos.length >= 2 && !menusActivos.includes(imgUrl)) {
-            alert('⚠️ Solo puedes tener 2 menús activos simultáneamente.\nDesactiva uno primero.');
+            alert('⚠️ Solo puedes tener 2 menús activos.\nDesactiva uno primero.');
             return;
         }
 
         if (!menusActivos.includes(imgUrl)) {
             menusActivos.push(imgUrl);
-            
-            // Guardar en localStorage
             localStorage.setItem('menus_activos', JSON.stringify(menusActivos));
             
-            // ✅ NUEVO: Guardar en Firebase
+            // ✅ Sincronizar con Firebase
             if (typeof firebase !== 'undefined' && firebase.database) {
-                const db = firebase.database();
-                await db.ref('menus_activos').set(menusActivos);
-                console.log('✅ Menús activos sincronizados con Firebase');
+                await firebase.database().ref('menus_activos').set(menusActivos);
+                
+                // ✅ NUEVO: Actualizar estado en menus_subidos
+                await firebase.database().ref(`menus_subidos/${menuId}/activo`).set(true);
             }
             
             cargarMenuDelDia();
             cargarGaleriaMenus();
-            alert('✅ Menú activado en la página principal');
+            alert('✅ Menú activado');
         }
-
     } catch (error) {
-        console.error('Error activando menú:', error);
-        alert('❌ Error al activar el menú');
+        console.error('Error:', error);
+        alert('❌ Error al activar');
     }
 }
 
 
-function desactivarMenuEnHome(imgUrl) {
+async function desactivarMenuEnHome(menuId, imgUrl) {
     try {
         let menusActivos = JSON.parse(localStorage.getItem('menus_activos') || '[]');
         menusActivos = menusActivos.filter(url => url !== imgUrl);
         localStorage.setItem('menus_activos', JSON.stringify(menusActivos));
-
+        
+        // ✅ Sincronizar con Firebase
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            await firebase.database().ref('menus_activos').set(menusActivos);
+            
+            // ✅ NUEVO: Actualizar estado en menus_subidos
+            await firebase.database().ref(`menus_subidos/${menuId}/activo`).set(false);
+        }
+        
         cargarMenuDelDia();
         cargarGaleriaMenus();
         alert('✅ Menú desactivado');
-
     } catch (error) {
-        console.error('Error desactivando menú:', error);
-        alert('❌ Error al desactivar');
+        console.error('Error:', error);
     }
 }
+
+
 
 function eliminarFotoMenu(menuId) {
     if (!confirm('¿Eliminar esta foto del menú?')) return;
