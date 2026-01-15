@@ -18,7 +18,8 @@
     <link rel="stylesheet" href="blocked-days.css">
     <link rel="stylesheet" href="calendar-month.css">
     <link rel="stylesheet" href="form-mobile-fix.css">
-     <!-- ✅ AÑADE ESTO AQUÍ ↓ -->
+    
+    <!-- ✅ AÑADE ESTO AQUÍ ↓ -->
     <style>
         /* Fix urgente calendario móvil */
         @media (max-width: 900px) {
@@ -122,7 +123,40 @@
                 font-size: 1rem !important;
             }
         }
+
+        /* Fix botón añadir reserva y texto en móvil */
+        @media (max-width: 768px) {
+            #calendar-header-title {
+                text-align: center !important;
+                font-size: 1.3rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            #calendar-header-title + p {
+                text-align: center !important;
+                font-size: 0.75rem !important;
+                color: #666 !important;
+                padding: 0 1rem !important;
+                margin: 0.5rem auto 1rem !important;
+                line-height: 1.4 !important;
+                word-break: break-word !important;
+            }
+
+            /* Botón añadir reserva manual */
+            button[onclick*="mostrarModalReservaManual"] {
+                position: fixed !important;
+                bottom: 90px !important;
+                right: 20px !important;
+                left: auto !important;
+                width: auto !important;
+                padding: 0.8rem 1.2rem !important;
+                font-size: 0.8rem !important;
+                z-index: 999 !important;
+                white-space: nowrap !important;
+            }
+        }
     </style>
+
 </head>
 
 </head>
