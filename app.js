@@ -465,19 +465,22 @@ function renderizarCalendario() {
     const totalDias = diasDesdeInicio + diasEnMes;
     const semanas = Math.ceil(totalDias / 7);
 
-    // Header con navegación
-    // Header con navegación
+    // Header con navegación (con estilos inline para móvil)
 let html = `
-<div style="width: 100%; display: block; margin-bottom: 2rem;">
-    <div class="calendar-month-header">
-        <button class="nav-month-btn" onclick="cambiarMes(-1)" title="Mes anterior">◀</button>
-        <h3 class="calendar-month-title">${nombresMeses[month]} ${year}</h3>
-        <button class="nav-month-btn" onclick="cambiarMes(1)" title="Mes siguiente">▶</button>
-        <button class="today-btn" onclick="irMesActual()" title="Ir a hoy">Hoy</button>
-    </div>
+<div class="calendar-month-header" style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:1rem; padding:1rem; width:100%; background:linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, rgba(160, 82, 45, 0.05) 100%); border:2px solid #8B4513; border-radius:10px; margin-bottom:1.5rem;">
+    
+    <h3 class="calendar-month-title" style="width:100%; text-align:center; order:1; margin:0 0 0.5rem 0; color:#8B4513; font-size:1.3rem; font-weight:700;">${nombresMeses[month]} ${year}</h3>
+    
+    <button class="nav-month-btn" onclick="cambiarMes(-1)" style="order:2; background:white; color:#8B4513; border:2px solid #8B4513; border-radius:8px; width:50px; height:50px; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">◀</button>
+    
+    <button class="nav-month-btn" onclick="cambiarMes(1)" style="order:3; background:white; color:#8B4513; border:2px solid #8B4513; border-radius:8px; width:50px; height:50px; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">▶</button>
+    
+    <button class="today-btn" onclick="irMesActual()" style="order:4; width:100%; margin-top:0.5rem; background:linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color:white; border:none; border-radius:8px; padding:0.7rem 1.3rem; font-size:0.9rem; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(76, 175, 80, 0.3);">Hoy</button>
 </div>
 
-<div class="calendar-weeks-container" style="width: 100%; clear: both;">`;
+<div class="calendar-weeks-container" style="width:100%; display:flex; flex-direction:column; gap:0.8rem;">`;
+
+
 
     for (let semana = 0; semana < semanas; semana++) {
         html += '<div class="calendar-week-row">';
