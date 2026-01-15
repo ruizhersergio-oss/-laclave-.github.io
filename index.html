@@ -142,21 +142,27 @@
                 word-break: break-word !important;
             }
 
-            /* Botón añadir reserva manual */
+            /* Botón añadir reserva manual - Simple y funcional */
             button[onclick*="mostrarModalReservaManual"] {
                 display: block !important;
-                width: calc(100% - 2rem) !important; /* Ancho total menos márgenes */
-                max-width: 100% !important;
-                margin: 1rem !important;
-                padding: 0.9rem 1rem !important;
+                width: 90% !important;
+                max-width: 400px !important;
+                margin: 1rem auto !important;
+                padding: 1rem 1.5rem !important;
                 font-size: 0.85rem !important;
-                white-space: normal !important; /* Permitir salto de línea si es necesario */
-                line-height: 1.3 !important;
+                font-weight: 600 !important;
                 text-align: center !important;
-                position: relative !important;
-                box-sizing: border-box !important;
-                overflow: hidden !important;
+                background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%) !important;
+                color: white !important;
+                border: none !important;
+                border-radius: 10px !important;
+                box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3) !important;
+                cursor: pointer !important;
+                white-space: normal !important; /* ← CAMBIAR: permite salto de línea */
+                line-height: 1.4 !important;
             }
+
+
 
             /* Asegurar que el contenedor padre permita el flujo correcto */
             .admin-calendar-section {
@@ -164,6 +170,21 @@
                 width: 100% !important;
                 box-sizing: border-box !important;
             }
+            /* Ocultar botón añadir reserva manual en móvil */
+            @media (max-width: 768px) {
+                .add-manual-btn {
+                    display: none !important;
+                }
+            }
+
+            /* Mostrar en escritorio */
+            @media (min-width: 769px) {
+                .add-manual-btn {
+                    display: block !important;
+                    margin: 1rem 0 !important;
+                }
+            }
+
         }
     </style>
 
