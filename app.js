@@ -963,7 +963,8 @@ function renderizarGaleriaMenus(menus, gallery) {
         </div>
         <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
             ${!esActivo ? 
-                `<button class="activate-menu-btn" onclick="activarMenuEnHome('${menu.id}', '${menu.url}')" title="Activar">Activar</button>` 
+                `<button class="activate-menu-btn" onclick="activarMenuEnHome('${menu.id}', '${menu.url}')" title="Activar" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);">✓ Activar</button>`
+
                 : 
                 `<button class="deactivate-menu-btn" onclick="desactivarMenuEnHome('${menu.id}', '${menu.url}')" title="Desactivar">Desactivar</button>`
             }

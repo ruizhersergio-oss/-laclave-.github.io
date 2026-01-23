@@ -3,9 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Restaurante La Clave - Cocina tradicional en Daimiel. Reserva tu mesa online y descubre nuestras especialidades.">
-    <meta name="keywords" content="restaurante, Daimiel, cocina tradicional, reservas online, La Clave">
-    <title>Restaurante La Clave - Daimiel | Cocina Tradicional</title>
+
+    <!-- SEO Principal -->
+    <title>Restaurante La Clave Daimiel | Cocina Tradicional Manchega | Reserva Online</title>
+    <meta name="description" content="Restaurante La Clave en Daimiel (Ciudad Real). Cocina tradicional manchega con especialidades como arroz con bogavante, pisto manchego y carpaccio de bacalao. Reserva tu mesa online. ☎️ 669 670 985">
+    <meta name="keywords" content="restaurante Daimiel, cocina manchega, arroz con bogavante, pisto manchego, reservas online Daimiel, restaurante Ciudad Real, La Clave Daimiel, gastronomía manchega">
+    <meta name="author" content="Restaurante La Clave">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sergioruizher.com/">
+
+    <!-- Open Graph (Facebook, WhatsApp) -->
+    <meta property="og:type" content="restaurant">
+    <meta property="og:title" content="Restaurante La Clave - Cocina Tradicional Daimiel">
+    <meta property="og:description" content="Cocina tradicional manchega en Daimiel. Arroz con bogavante, pisto manchego y más. Reserva online.">
+    <meta property="og:url" content="https://sergioruizher.com/">
+    <meta property="og:site_name" content="Restaurante La Clave">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:image" content="https://sergioruizher.com/arrozconbogavante.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Restaurante La Clave Daimiel | Cocina Manchega">
+    <meta name="twitter:description" content="Especialidades: Arroz con bogavante, pisto manchego, carpaccio de bacalao. Reserva online.">
+    <meta name="twitter:image" content="https://sergioruizher.com/arrozconbogavante.jpg">
+
+    <!-- Geolocalización -->
+    <meta name="geo.region" content="ES-CR">
+    <meta name="geo.placename" content="Daimiel">
+    <meta name="geo.position" content="39.0716526;-3.6178009">
+    <meta name="ICBM" content="39.0716526, -3.6178009">
+
+    <!-- Schema.org LocalBusiness + Restaurant -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": "Restaurante La Clave",
+      "image": "https://sergioruizher.com/arrozconbogavante.jpg",
+      "@id": "https://sergioruizher.com",
+      "url": "https://sergioruizher.com",
+      "telephone": "+34669670985",
+      "priceRange": "€€",
+      "servesCuisine": ["Española", "Manchega", "Tradicional"],
+      "acceptsReservations": "True",
+      "menu": "https://sergioruizher.com/#menu",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "C. Cruz Ana María, 2",
+        "addressLocality": "Daimiel",
+        "addressRegion": "Ciudad Real",
+        "postalCode": "13250",
+        "addressCountry": "ES"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 39.0716526,
+        "longitude": -3.6178009
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "13:00",
+          "closes": "16:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "20:00",
+          "closes": "23:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Saturday", "Sunday"],
+          "opens": "13:00",
+          "closes": "16:30"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Saturday", "Sunday"],
+          "opens": "20:00",
+          "closes": "23:30"
+        }
+      ],
+      "sameAs": [
+        "https://sergioruizher.com"
+      ]
+    }
+    </script>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#8B4513">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
     <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -18,7 +112,6 @@
     <link rel="stylesheet" href="blocked-days.css">
     <link rel="stylesheet" href="calendar-month.css">
     <link rel="stylesheet" href="form-mobile-fix.css">
-    
     <!-- ✅ AÑADE ESTO AQUÍ ↓ -->
     <style>
         /* Fix urgente calendario móvil */
@@ -186,10 +279,37 @@
             }
 
         }
+        /* Fix campo fecha en móvil */
+            @media (max-width: 768px) {
+                input[type="date"] {
+                    -webkit-appearance: none !important;
+                    appearance: none !important;
+                    padding: 0.8rem !important;
+                    font-size: 1rem !important;
+                    color: #333 !important;
+                    background: white !important;
+                    border: 2px solid #8B4513 !important;
+                    border-radius: 8px !important;
+                }
+    
+                input[type="date"]::-webkit-date-and-time-value {
+                    text-align: left !important;
+                }
+    
+                input[type="date"]::before {
+                    content: attr(placeholder) !important;
+                    color: #999 !important;
+                }
+    
+                input[type="date"]:focus::before,
+                input[type="date"]:valid::before {
+                    content: "" !important;
+                }
+            }
+
     </style>
 
 </head>
-
 </head>
 <body>
     <!-- Header -->
@@ -462,13 +582,22 @@
                         <p class="no-menus-msg">Cargando...</p>
                     </div>
                 </div>
+            <!-- NUEVO CONTENEDOR: Añadir Reserva Manual -->
+            <section class="quick-actions-section" style="background: white; border: 2px solid #8B4513; border-radius: 12px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="color: #8B4513; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    ⚡ Acciones Rápidas
+                </h3>
+                <button class="add-manual-btn" onclick="mostrarModalReservaManual()" style="display: block; width: 100%; max-width: 100%; padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%); color: white; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3); transition: transform 0.2s;">
+                    ➕ Añadir Reserva Manual
+                </button>
+            </section>
 
                 <!-- Calendario MENSUAL -->
                 <div class="calendar-container">
                     <div class="calendar-header">
                         <h3 style="color:#8B4513;">📅 Calendario de Reservas</h3>
                         <p style="color:#666; font-size:0.9rem; margin-top:0.5rem;">Navega entre meses • Haz clic en 🔒 para bloquear/desbloquear días</p>
-                        <button class="add-manual-btn" onclick="mostrarModalReservaManual()">+ Añadir Reserva Manual</button>
+                 
                     </div>
                     <div id="calendarGrid" class="calendar-grid"></div>
                 </div>
